@@ -76,6 +76,14 @@ pub fun display(canvas: Canvas) {
   } 
 }
 
+pub resource Printer {
+  pub fun print(canvas: Canvas): @Picture?{
+    let picture <- create Picture(canvas:canvas)
+    display(canvas:picture.canvas)
+    return <- picture
+  }
+}
+
 pub fun main() {
   let pixelsX = [
     "*   *",
@@ -91,6 +99,21 @@ pub fun main() {
   )
   let letterX <- create Picture(canvas: canvasX)
   let _canvas = letterX.canvas
+  log("W1Q1")
   display(canvas:_canvas)
   destroy letterX
+
+  log("W1Q2")
+  log("First Printer")
+  let printerX <- create Printer()
+  // only use once
+  let pictureX <- printerX.print(canvas:canvasX)
+  destroy printerX
+  destroy pictureX
+
+  log("Second Printer")
+  let printerY <- create Printer()
+  let pictureY <- printerY.print(canvas:canvasX)
+  destroy printerY
+  destroy pictureY
 }
