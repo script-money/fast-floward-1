@@ -22,7 +22,6 @@ pub fun serializeStringArray(_ lines: [String]): String {
   for line in lines {
     buffer = buffer.concat(line)
   }
-
   return buffer
 }
 
@@ -33,6 +32,48 @@ pub resource Picture {
   init(canvas: Canvas) {
     self.canvas = canvas
   }
+}
+
+pub fun display(canvas: Canvas) {
+  let newHeight = canvas.height
+  let newWidth = canvas.width
+  var h: UInt8 = 0
+  while h <= newHeight + 1{
+    var newBuffer: String = ""
+    var w: UInt8 = 0
+    while w <= newWidth + 1{
+      if h == 0 {
+        if w == 0 {
+          newBuffer= newBuffer.concat("+")
+        } else if w == newWidth + 1 {
+          newBuffer= newBuffer.concat("+")
+        } else {
+          newBuffer= newBuffer.concat("-")
+        }
+      } else if h == newHeight + 1 {
+        if w == 0 {
+          newBuffer= newBuffer.concat("+")
+        } else if w == newWidth + 1 {
+          newBuffer= newBuffer.concat("+")
+        } else {
+          newBuffer= newBuffer.concat("-")
+        }
+      }else{
+        if w == 0 {
+          newBuffer= newBuffer.concat("|")
+        } else if w == newWidth + 1 {
+          newBuffer= newBuffer.concat("|")
+        } else if w == 1{
+          let from:Int = Int(h-1) * 5
+          let upTo:Int = Int(h) * 5
+          newBuffer = newBuffer.concat(canvas.pixels.slice(from:from,upTo:upTo)) 
+        }
+      }   
+      w = w + 1
+    }  
+    h = h + 1
+    log(newBuffer) 
+  } 
 }
 
 pub fun main() {
@@ -49,6 +90,7 @@ pub fun main() {
     pixels: serializeStringArray(pixelsX)
   )
   let letterX <- create Picture(canvas: canvasX)
-  log(letterX.canvas)
+  let _canvas = letterX.canvas
+  display(canvas:_canvas)
   destroy letterX
 }
