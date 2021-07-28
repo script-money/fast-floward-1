@@ -77,10 +77,39 @@ pub fun display(canvas: Canvas) {
 }
 
 pub resource Printer {
-  pub fun print(canvas: Canvas): @Picture?{
-    let picture <- create Picture(canvas:canvas)
-    display(canvas:picture.canvas)
-    return <- picture
+  pub let width: UInt8
+  pub let height: UInt8
+  pub let prints: {String: Canvas}
+
+  init(width: UInt8, height: UInt8) {
+    self.width = width;
+    self.height = height;
+    self.prints = {}
+  }
+
+  pub fun print(canvas: Canvas): @Picture? {
+    // Canvas needs to fit Printer's dimensions.
+    if canvas.pixels.length != Int(self.width * self.height) {
+      return nil
+    }
+
+    // Canvas can only use visible ASCII characters.
+    for symbol in canvas.pixels.utf8 {
+      if symbol < 32 || symbol > 126 {
+        return nil
+      }
+    }
+
+    // Printer is only allowed to print unique canvases.
+    if self.prints.containsKey(canvas.pixels) == false {
+      let picture <- create Picture(canvas: canvas)
+      self.prints[canvas.pixels] = canvas
+      display(canvas: picture.canvas)
+      return <- picture
+    } else {
+      log("canvas duplicate in a same printer!")
+      return nil
+    }
   }
 }
 
@@ -104,16 +133,15 @@ pub fun main() {
   destroy letterX
 
   log("W1Q2")
-  log("First Printer")
-  let printerX <- create Printer()
+  log("First Printing")
+  let printerX <- create Printer(width:5, height:5)
   // only use once
   let pictureX <- printerX.print(canvas:canvasX)
-  destroy printerX
   destroy pictureX
 
-  log("Second Printer")
-  let printerY <- create Printer()
-  let pictureY <- printerY.print(canvas:canvasX)
-  destroy printerY
+  log("Second Printing")
+  let pictureY <- printerX.print(canvas:canvasX)
   destroy pictureY
+
+  destroy printerX
 }
