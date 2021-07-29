@@ -63,16 +63,70 @@ pub contract Artist {
         return nil
       }
     }
+
+    pub fun display(canvas:Canvas) {
+      let newHeight = canvas.height
+      let newWidth = canvas.width
+      var h: UInt8 = 0
+      while h <= newHeight + 1{
+        var newBuffer: String = ""
+        var w: UInt8 = 0
+        while w <= newWidth + 1{
+          if h == 0 {
+            if w == 0 {
+              newBuffer= newBuffer.concat("+")
+            } else if w == newWidth + 1 {
+              newBuffer= newBuffer.concat("+")
+            } else {
+              newBuffer= newBuffer.concat("-")
+            }
+          } else if h == newHeight + 1 {
+            if w == 0 {
+              newBuffer= newBuffer.concat("+")
+            } else if w == newWidth + 1 {
+              newBuffer= newBuffer.concat("+")
+            } else {
+              newBuffer= newBuffer.concat("-")
+            }
+          }else{
+            if w == 0 {
+              newBuffer= newBuffer.concat("|")
+            } else if w == newWidth + 1 {
+              newBuffer= newBuffer.concat("|")
+            } else if w == 1{
+              let from:Int = Int(h-1) * 5
+              let upTo:Int = Int(h) * 5
+              newBuffer = newBuffer.concat(canvas.pixels.slice(from:from,upTo:upTo)) 
+            }
+          }   
+          w = w + 1
+        }  
+        h = h + 1
+        log(newBuffer) 
+      } 
+    }
   }
 
   pub resource Collection {
     pub let pictures: @[Picture]
 
-    pub fun deposit(picture: @Picture){
-      self.pictures.append(<-picture)
+    pub fun deposit(picture: @Picture) {
+      self.pictures.append(<- picture)
     }
 
-    init(){
+    pub fun getCanvases(): [Canvas] {
+      var canvases: [Canvas] = []
+      var index = 0
+      while index < self.pictures.length {
+        canvases.append(
+          self.pictures[index].canvas
+        )
+        index = index + 1
+      }
+      return canvases;
+    }
+
+    init() {
       self.pictures <- []
     }
 

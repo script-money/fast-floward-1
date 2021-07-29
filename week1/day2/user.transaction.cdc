@@ -1,46 +1,24 @@
 import Artist from 0x02
 
-transaction() {
-  
-  let pixels: String
-  var picture: @Artist.Picture?
-  var collectionRef: &Artist.Collection
-
-  prepare(account: AuthAccount) {
-    let printerRef = getAccount(0x02)
+pub fun main() {
+  // Write a script that prints the contents of collections for all five Playground accounts (0x01, 0x02, etc.). 
+  // Please use your framed canvas printer function to log each Picture's canvas in a legible way. 
+  // Provide a log for accounts that don't yet have a Collection.
+  let addresses = [0x01,0x02,0x03,0x04,0x05] as [Address]
+  let printerRef = getAccount(0x02)
       .getCapability<&Artist.Printer>(/public/ArtistPicturePrinter)
       .borrow()
       ?? panic("Couldn't borrow printer reference.")
-    
-    // Replace with your own drawings.
-    self.pixels = "*   * * *   *   * * *   *"
-    let canvas = Artist.Canvas(
-      width: printerRef.width,
-      height: printerRef.height,
-      pixels: self.pixels
-    )
-    
-    let collection <- Artist.createCollection()
-    
-    if !account.getCapability<&Artist.Collection>(/private/collection).check(){
-      account.save( <- collection, to:/storage/collection)
-      account.link<&Artist.Collection>(/private/collection, target: /storage/collection)
-      log("collection create")
-    }else{
-      log("collection exist")
-      destroy collection
-    }
 
-    self.collectionRef = account.getCapability<&Artist.Collection>(/private/collection).borrow()?? panic("no collection borrow")
-    self.picture <- printerRef.print(canvas: canvas)
-  }
-
-  execute {
-    if self.picture != nil{
-      self.collectionRef.deposit(picture: <- self.picture!)
+  for address in addresses{
+    let collectionRef = getAccount(address).getCapability<&Artist.Collection>(/public/collection).borrow()?? panic("account don't yet have a Collection")
+    let canvases = collectionRef.getCanvases()
+    if canvases.length == 0 {
+      for canvas in canvases{
+        printerRef.display(Canvas:canvases)
+      }
     }else{
-      log("picture not exist")
-      destroy self.picture
+     log("account has not have picture")
     }
   }
 }
