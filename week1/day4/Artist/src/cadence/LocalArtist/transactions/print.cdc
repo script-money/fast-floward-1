@@ -6,8 +6,7 @@ transaction(width: Int, height: Int, pixels: String) {
   let collectionRef: &{LocalArtist.PictureReceiver}
 
   prepare(account: AuthAccount) {
-    // TODO: Change to your contract account address.
-    let printerRef = getAccount(0x01)
+    let printerRef = getAccount(0xf797f98f2309655b)
       .getCapability<&LocalArtist.Printer>(/public/LocalArtistPicturePrinter)
       .borrow()
       ?? panic("Couldn't borrow printer reference.")

@@ -8,7 +8,8 @@ import App from './App.jsx';
 fcl
   .config()
   .put('accessNode.api', 'https://access-testnet.onflow.org')
-  .put('discovery.wallet', 'https://fcl-discovery.onflow.org/testnet/authn');
+  .put('discovery.wallet', 'https://fcl-discovery.onflow.org/testnet/authn')
+  .put("0xLocalArtist", "0xf797f98f2309655b")
 
 ReactDOM.render(
   <React.StrictMode>
