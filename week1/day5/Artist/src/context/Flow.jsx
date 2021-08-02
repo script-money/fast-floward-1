@@ -1,16 +1,16 @@
-import React, {useReducer, useEffect, useCallback} from 'react';
-import * as fcl from '@onflow/fcl';
-import * as FlowTypes from '@onflow/types';
+import React, { useReducer, useEffect, useCallback } from 'react'
+import * as fcl from '@onflow/fcl'
+import * as FlowTypes from '@onflow/types'
 
-import Picture from '../model/Picture.js';
+import Picture from '../model/Picture.js'
 
-const Context = React.createContext({});
+const Context = React.createContext({})
 
 const constants = {
   flowFormat: new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 4
   })
-};
+}
 
 function reducer(state, action) {
   switch (action.type) {
@@ -18,29 +18,29 @@ function reducer(state, action) {
       return {
         ...state,
         user: action.payload
-      };
+      }
     }
     case 'setBalance': {
       return {
         ...state,
         balance: action.payload
-      };
+      }
     }
     case 'setCollection': {
       if (action.payload) {
         return {
           ...state,
           collection: action.payload
-        };
+        }
       } else {
         return {
           ...state,
           collection: action.payload
-        };
+        }
       }
     }
     default:
-      return state;
+      return state
   }
 }
 
@@ -49,19 +49,16 @@ function Provider(props) {
     user: null,
     balance: null,
     collection: undefined
-  });
+  })
 
-  const isReady = (
-    state.balance !== null &&
-    state.collection !== undefined
-  );
+  const isReady = state.balance !== null && state.collection !== undefined
 
-  const fetchBalance = useCallback(
-    async () => {
-      if (state.user.addr && state.user.addr !== '0xLocalArtist') {
-        // A sample script execution.
-        // Query for the account's FLOW token balance.
-        const balance = await fcl.send([
+  const fetchBalance = useCallback(async () => {
+    if (state.user.addr && state.user.addr !== '0xLocalArtist') {
+      // A sample script execution.
+      // Query for the account's FLOW token balance.
+      const balance = await fcl
+        .send([
           fcl.script`
             import FungibleToken from 0x9a0766d93b6608b7
             import FlowToken from 0x7e60df042a9c0868
@@ -75,21 +72,18 @@ function Provider(props) {
               return vaultRef.balance;
             }
           `,
-          fcl.args([
-            fcl.arg(state.user.addr, FlowTypes.Address)
-          ])
-        ]).then(fcl.decode);
+          fcl.args([fcl.arg(state.user.addr, FlowTypes.Address)])
+        ])
+        .then(fcl.decode)
 
-        dispatch({type: 'setBalance', payload: balance});
-      } else {
-        return dispatch({type: 'setBalance', payload: -42});
-      }
-    },
-    [state.user]
-  );
-  const createCollection = useCallback(
-    async () => {
-      const transactionId = await fcl.send([
+      dispatch({ type: 'setBalance', payload: balance })
+    } else {
+      return dispatch({ type: 'setBalance', payload: -42 })
+    }
+  }, [state.user])
+  const createCollection = useCallback(async () => {
+    const transactionId = await fcl
+      .send([
         fcl.transaction`
           import LocalArtist from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
           
@@ -110,15 +104,14 @@ function Provider(props) {
         fcl.proposer(fcl.authz),
         fcl.authorizations([fcl.authz]),
         fcl.limit(9999)
-      ]).then(fcl.decode);
-      
-      return fcl.tx(transactionId).onceSealed();
-    },
-    []
-  );
-  const destroyCollection = useCallback(
-    async () => {
-      const transactionId = await fcl.send([
+      ])
+      .then(fcl.decode)
+
+    return fcl.tx(transactionId).onceSealed()
+  }, [])
+  const destroyCollection = useCallback(async () => {
+    const transactionId = await fcl
+      .send([
         fcl.transaction`
           import LocalArtist from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
 
@@ -134,31 +127,27 @@ function Provider(props) {
         fcl.proposer(fcl.authz),
         fcl.authorizations([fcl.authz]),
         fcl.limit(9999)
-      ]).then(fcl.decode);
+      ])
+      .then(fcl.decode)
 
-      return fcl.tx(transactionId).onceSealed();
-    },
-    []
-  );
+    return fcl.tx(transactionId).onceSealed()
+  }, [])
   const fetchCollection = useCallback(
-    async (address) => {
+    async address => {
       if (address || state.user.addr) {
         try {
-          let args = null;
+          let args = null
           if (address) {
             // eslint-disable-next-line
-            args = fcl.args([
-              fcl.arg(address, FlowTypes.Address)
-            ]);
+            args = fcl.args([fcl.arg(address, FlowTypes.Address)])
           } else {
             // eslint-disable-next-line
-            args = fcl.args([
-              fcl.arg(state.user.addr, FlowTypes.Address)
-            ]);
+            args = fcl.args([fcl.arg(state.user.addr, FlowTypes.Address)])
           }
-          
-          const collection = await fcl.send([
-            fcl.script`
+
+          const collection = await fcl
+            .send([
+              fcl.script`
               import LocalArtist from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
       
               pub fun main(address: Address): [LocalArtist.Canvas] {
@@ -171,35 +160,37 @@ function Provider(props) {
                 return pictureReceiverRef.getCanvases()
               }
             `,
-            args
-          ]).then(fcl.decode);
+              args
+            ])
+            .then(fcl.decode)
           const mappedCollection = collection.map(
-            (serialized) => new Picture(
-              serialized.pixels,
-              serialized.width,
-              serialized.height
-            )
-          );
+            serialized =>
+              new Picture(
+                serialized.pixels,
+                serialized.width,
+                serialized.height
+              )
+          )
 
           if (address) {
-            return mappedCollection;
+            return mappedCollection
           } else {
-            dispatch({type: 'setCollection', payload: mappedCollection});
+            dispatch({ type: 'setCollection', payload: mappedCollection })
           }
         } catch (error) {
           if (address) {
-            return null;
+            return null
           } else {
-            dispatch({type: 'setCollection', payload: null});
+            dispatch({ type: 'setCollection', payload: null })
           }
         }
       }
     },
     [state.user]
-  );
-  const printPicture = useCallback(
-    async (picture) => {
-      const transactionId = await fcl.send([
+  )
+  const printPicture = useCallback(async picture => {
+    const transactionId = await fcl
+      .send([
         fcl.transaction`
           import LocalArtist from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
 
@@ -243,15 +234,14 @@ function Provider(props) {
         fcl.proposer(fcl.authz),
         fcl.authorizations([fcl.authz]),
         fcl.limit(9999)
-      ]).then(fcl.decode);
-      
-      return fcl.tx(transactionId).onceSealed();
-    },
-    []
-  );
-  const fetchListings = useCallback(
-    async () => {
-      const listings = await fcl.send([
+      ])
+      .then(fcl.decode)
+
+    return fcl.tx(transactionId).onceSealed()
+  }, [])
+  const fetchListings = useCallback(async () => {
+    const listings = await fcl
+      .send([
         fcl.script`
           import LocalArtistMarket from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
   
@@ -265,15 +255,15 @@ function Provider(props) {
             return marketInterfaceRef.getListings()
           }
         `
-      ]).then(fcl.decode);
+      ])
+      .then(fcl.decode)
 
-      return listings;
-    },
-    []
-  );
-  const postListing = useCallback(
-    async (picture, price) => {
-      const transactionId = await fcl.send([
+    return listings
+  }, [])
+
+  const postListing = useCallback(async (picture, price) => {
+    const transactionId = await fcl
+      .send([
         fcl.transaction`
           import LocalArtist from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
           import LocalArtistMarket from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
@@ -308,89 +298,105 @@ function Provider(props) {
         `,
         fcl.args([
           fcl.arg(picture.pixels, FlowTypes.String),
-          fcl.arg(`${constants.flowFormat.format(price)}`, FlowTypes.UFix64),
+          fcl.arg(`${constants.flowFormat.format(price)}`, FlowTypes.UFix64)
         ]),
         fcl.payer(fcl.authz),
         fcl.proposer(fcl.authz),
         fcl.authorizations([fcl.authz]),
         fcl.limit(9999)
-      ]).then(fcl.decode);
-      
-      return fcl.tx(transactionId).onceSealed();
-    },
-    []
-  );
-  const withdrawListing = useCallback(
-    async (listingIndex) => {
-      const transactionId = await fcl.send([
+      ])
+      .then(fcl.decode)
+
+    return fcl.tx(transactionId).onceSealed()
+  }, [])
+
+  const withdrawListing = useCallback(async listingIndex => {
+    const transactionId = await fcl
+      .send([
         fcl.transaction`
           import LocalArtist from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
           import LocalArtistMarket from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
 
-          // TODO: Complete this transaction by calling LocalArtistMarket.withdraw().
           transaction(listingIndex: Int) {
+            prepare(account: AuthAccount) {
+              let marketRef = getAccount(${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT})
+                .getCapability(/public/LocalArtistMarket)
+                .borrow<&{LocalArtistMarket.MarketInterface}>()
+                ?? panic("Couldn't borrow market reference.")
+              
+              marketRef.withdraw(listingIndex: listingIndex,to: account.address)
+            }
           }
         `,
-        fcl.args([
-          fcl.arg(listingIndex, FlowTypes.Int)
-        ]),
+        fcl.args([fcl.arg(listingIndex, FlowTypes.Int)]),
         fcl.payer(fcl.authz),
         fcl.proposer(fcl.authz),
         fcl.authorizations([fcl.authz]),
         fcl.limit(9999)
-      ]).then(fcl.decode);
-      
-      return fcl.tx(transactionId).onceSealed();
-    },
-    []
-  );
-  const buy = useCallback(
-    async (listingIndex) => {
-      const transactionId = await fcl.send([
+      ])
+      .then(fcl.decode)
+
+    return fcl.tx(transactionId).onceSealed()
+  }, [])
+
+  const buy = useCallback(async listingIndex => {
+    const transactionId = await fcl
+      .send([
         fcl.transaction`
           import LocalArtist from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
           import LocalArtistMarket from ${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT}
           import FungibleToken from 0x9a0766d93b6608b7
           import FlowToken from 0x7e60df042a9c0868
 
-          // TODO: Complete this transaction by calling LocalArtistMarket.buy().
           transaction(listingIndex: Int) {
+            prepare(account: AuthAccount) {
+              let marketRef = getAccount(${process.env.REACT_APP_ARTIST_CONTRACT_HOST_ACCOUNT})
+                .getCapability(/public/LocalArtistMarket)
+                .borrow<&{LocalArtistMarket.MarketInterface}>()
+                ?? panic("Couldn't borrow market reference.")
+              let listing = marketRef.getListings()[listingIndex]!
+
+              let tokenVault = account.borrow<&FungibleToken.Vault>(from: /storage/flowTokenVault)!
+
+              marketRef.buy(
+                listing: listingIndex, 
+                with:<- tokenVault.withdraw(amount:listing.price),
+                buyer: account.address
+              )
+            }
           }
         `,
-        fcl.args([
-          fcl.arg(listingIndex, FlowTypes.Int)
-        ]),
+        fcl.args([fcl.arg(listingIndex, FlowTypes.Int)]),
         fcl.payer(fcl.authz),
         fcl.proposer(fcl.authz),
         fcl.authorizations([fcl.authz]),
         fcl.limit(9999)
-      ]).then(fcl.decode);
-      
-      return fcl.tx(transactionId).onceSealed();
-    },
-    []
-  );
+      ])
+      .then(fcl.decode)
 
-  const setUser = (user) => {
-    dispatch({type: 'setUser', payload: user});
-  };
+    return fcl.tx(transactionId).onceSealed()
+  }, [])
+
+  const setUser = user => {
+    dispatch({ type: 'setUser', payload: user })
+  }
   const logIn = () => {
-    fcl.logIn();
-  };
+    fcl.logIn()
+  }
   const logOut = () => {
-    fcl.unauthenticate();
-  };
+    fcl.unauthenticate()
+  }
 
   useEffect(() => {
-    fcl.currentUser().subscribe(setUser);
-  }, []);
+    fcl.currentUser().subscribe(setUser)
+  }, [])
 
   useEffect(() => {
     if (state.user && state.user.addr) {
-      fetchBalance();
-      fetchCollection();
+      fetchBalance()
+      fetchCollection()
     }
-  }, [state.user, fetchBalance, fetchCollection]);
+  }, [state.user, fetchBalance, fetchCollection])
 
   return (
     <Context.Provider
@@ -413,10 +419,7 @@ function Provider(props) {
     >
       {props.children}
     </Context.Provider>
-  );
+  )
 }
 
-export {
-  Context as default,
-  Provider
-};
+export { Context as default, Provider }
