@@ -74,14 +74,12 @@ pub contract Kibble: FungibleToken {
         // elsewhere.
         //
         pub fun withdraw(amount: UFix64): @FungibleToken.Vault {
-            // TODO: Delete the line below and implement this function
-            return <- create Vault(balance: 0.0)
-
             // 1) Take away 'amount' balance from this Vault
-
+            self.balance = self.balance - amount
             // 2) emit TokensWithdrawn
-            
+            emit TokensWithdrawn(amount: amount, from: self.owner?.address)
             // 3) return a new Vault with balance == 'amount'
+            return <-create Vault(balance: amount)
         }
 
         // deposit
