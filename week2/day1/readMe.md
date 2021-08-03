@@ -326,6 +326,27 @@ Ex. In Area 1:
 3. Functions that can be accessed: publicFunc and privateFunc
 Note: this is very wrong ^, haha!
 
+My answer:
+In Area 1:
+1. Variables that can be read: a b c d
+2. Variables that can be modified: a b c d
+3. Functions that can be accessed: publicFunc privateFunc contractFunc
+
+In Area 2:
+1. Variables that can be read: a b c
+2. Variables that can be modified: a
+3. Functions that can be accessed: publicFunc contractFunc
+
+In Area 3:
+1. Variables that can be read: a b c
+2. Variables that can be modified: a
+3. Functions that can be accessed: publicFunc contractFunc
+
+In Area 4:
+1. Variables that can be read: a b
+2. Variables that can be modified: a
+3. Functions that can be accessed: publicFunc
+
 - `W2Q2` – Dappiness
 
 For this quest, follow the [Getting our DappStarter dApp](https://www.youtube.com/watch?v=-CuH95wtR-I). Get the Fast Floward Foundation on DappStarter and attempt to run your project as instructed in the video. If you can `yarn start`, see the UI Harness, and submit all the Day 1 **action cards**, you are done! Simply submit a screenshot of the return values on the action cards :)
